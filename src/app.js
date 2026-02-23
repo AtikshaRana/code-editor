@@ -16,6 +16,15 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
+// Global handlers to prevent unhandled crashes in lambdas
+process.on('uncaughtException', (err) => {
+  console.error('[CRITICAL] Uncaught Exception:', err.message);
+  console.error(err.stack);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[CRITICAL] Unhandled Rejection:', reason);
+});
+
 // const { initSocket } = require('./socket'); // Disabled for Vercel 500 debugging
 
 // ---------- BASIC INIT ----------
@@ -186,10 +195,24 @@ app.use((req, res) => {
 
 // ---------- ERROR HANDLER ----------
 app.use((err, req, res, _next) => {
-  res.status(err.status || 500).render('error', {
+  console.error('[Error Handler] Caught error:', err.message);
+
+  const status = err.status || 500;
+  const context = {
     title: 'Error',
     message: err.message || 'An unexpected error occurred.',
     error: process.env.NODE_ENV === 'development' ? err : {}
+  };
+
+  res.status(status);
+
+  // Try to render the error page, but if EJS fails (e.g. missing file), fallback to JSON/Text
+  res.render('error', context, (renderErr, html) => {
+    if (renderErr) {
+      console.warn('[Error Handler] Failed to render error view:', renderErr.message);
+      return res.send(`<h1>Error ${status}</h1><p>${context.message}</p>`);
+    }
+    res.send(html);
   });
 });
 
