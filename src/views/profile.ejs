@@ -1,83 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
+    <title>
+        <%= title %>
+    </title>
     <link rel="stylesheet" href="/landing.css">
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
 </head>
+
 <body>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="nav-left">
-                    <h1 class="logo">Edit</h1>
-                </div>
-                <div class="nav-right">
-                    <a href="/dashboard" class="nav-link">Dashboard</a>
-                    <a href="/editor" class="nav-link">Editor</a>
-                    <a href="/auth/logout" class="nav-link">Logout</a>
-                </div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <h1 class="logo">Edit</h1>
             </div>
-        </nav>
+            <div class="nav-right">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/editor" class="nav-link">Editor</a>
+                <a href="/auth/logout" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
 
-        <section class="hero" style="padding-top:7rem;">
-            <div class="hero-badge">
-                <span class="star">⭐</span> Profile Overview
-            </div>
-            <h1 class="hero-title">
-                Welcome, <span class="gradient-text"><%= user.displayName %></span>
-            </h1>
-                <p class="hero-description">
-                    <% if (typeof viewingOther !== 'undefined' && viewingOther) { %>
-                      You are viewing the public profile of another user.
-                    <% } else { %>
-                      Your account and activity details are shown below.
+    <section class="hero" style="padding-top:7rem;">
+        <div class="hero-badge">
+            <span class="star">⭐</span> Profile Overview
+        </div>
+        <h1 class="hero-title">
+            Welcome, <span class="gradient-text">
+                <%= user.displayName %>
+            </span>
+        </h1>
+        <p class="hero-description">
+            <% if (typeof viewingOther !=='undefined' && viewingOther) { %>
+                You are viewing the public profile of another user.
+                <% } else { %>
+                    Your account and activity details are shown below.
                     <% } %>
-                </p>
-        </section>
+        </p>
+    </section>
 
-        <main class="main-content" style="max-width:900px;margin:0 auto;">
-            <div class="card" style="margin-bottom:2rem;">
-                <div style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap;justify-content:center;">
-                    <img src="<%= user.avatar %>" alt="Profile Picture" class="profile-image" style="width:120px;height:120px;border-radius:50%;border:4px solid var(--accent-cyan);background:#222;"  onerror="this.onerror=null;this.src='/images/favicon.ico';">
-                    <div>
-                        <h2 class="profile-name" style="margin-bottom:0.5rem;"><%= user.displayName %></h2>
-                        <p class="profile-email" style="color:var(--text-muted);font-size:1.1rem;"><%= user.email %></p>
-                    </div>
+    <main class="main-content" style="max-width:900px;margin:0 auto;">
+        <div class="card" style="margin-bottom:2rem;">
+            <div style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap;justify-content:center;">
+                <img src="<%= user.avatar %>" alt="Profile Picture" class="profile-image"
+                    style="width:120px;height:120px;border-radius:50%;border:4px solid var(--accent-cyan);background:#222;"
+                    onerror="this.onerror=null;this.src='/images/favicon.ico';">
+                <div>
+                    <h2 class="profile-name" style="margin-bottom:0.5rem;">
+                        <%= user.displayName %>
+                    </h2>
+                    <p class="profile-email" style="color:var(--text-muted);font-size:1.1rem;">
+                        <%= user.email %>
+                    </p>
                 </div>
             </div>
-            <div class="card" style="margin-bottom:2rem;">
-                <h3 class="section-title" style="margin-bottom:1rem;">👤 Personal Information</h3>
-                <div class="info-grid">
-                    <div class="info-item"><span class="info-label">Username -> </span><span class="info-value">@<%= user.username %></span></div>
-                    <div class="info-item"><span class="info-label">Name -> </span><span class="info-value"><%= user.displayName %></span></div>
-                    <div class="info-item"><span class="info-label">Email Address -> </span><span class="info-value"><%= user.email %></span></div>
-                    <div class="info-item"><span class="info-label">Total Codes -> </span><span class="info-value"><%= typeof codeCount !== 'undefined' ? codeCount : 0 %></span></div>
-                </div>
+        </div>
+        <div class="card" style="margin-bottom:2rem;">
+            <h3 class="section-title" style="margin-bottom:1rem;">👤 Personal Information</h3>
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">Username -> </span><span class="info-value">@<%=
+                            user.username %></span></div>
+                <div class="info-item"><span class="info-label">Name -> </span><span class="info-value">
+                        <%= user.displayName %>
+                    </span></div>
+                <div class="info-item"><span class="info-label">Email Address -> </span><span class="info-value">
+                        <%= user.email %>
+                    </span></div>
+                <div class="info-item"><span class="info-label">Total Codes -> </span><span class="info-value">
+                        <%= typeof codeCount !=='undefined' ? codeCount : 0 %>
+                    </span></div>
             </div>
-            <div class="card" style="margin-bottom:2rem;">
-                <h3 class="section-title" style="margin-bottom:1rem;">🔐 Account Details</h3>
-                <div class="info-grid">
-                    <div class="info-item"><span class="info-label">User Since -> </span><span class="info-value"><%= user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' %></span></div>
-                    <div class="info-item"><span class="info-label">online Status -> </span><span class="info-value"><% if (sessionActive) { %>🟢 Active<% } else { %>🔴 Inactive<% } %></span></div>
-                </div>
+        </div>
+        <div class="card" style="margin-bottom:2rem;">
+            <h3 class="section-title" style="margin-bottom:1rem;">🔐 Account Details</h3>
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">User Since -> </span><span class="info-value">
+                        <%= user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric' ,
+                            month: 'long' , day: 'numeric' }) : 'N/A' %>
+                    </span></div>
+                <div class="info-item"><span class="info-label">online Status -> </span><span class="info-value">
+                        <% if (sessionActive) { %>🟢 Active<% } else { %>🔴 Inactive<% } %>
+                    </span></div>
             </div>
-            <div class="card" style="margin-bottom:2rem;text-align:center;">
-                <h3 class="section-title">⚡ Quick Actions</h3>
-                <div class="action-buttons" style="justify-content:center;gap:1rem;flex-wrap:wrap;">
-                    <a href="/dashboard" class="btn-primary">🏠 Go to Dashboard</a>
-                    <a href="/editor" class="btn-primary">⚡ Start Coding</a>
-                    <a href="/saved" class="btn-primary">📁 My Files</a>
-                </div>
+        </div>
+        <div class="card" style="margin-bottom:2rem;text-align:center;">
+            <h3 class="section-title">⚡ Quick Actions</h3>
+            <div class="action-buttons" style="justify-content:center;gap:1rem;flex-wrap:wrap;">
+                <a href="/dashboard" class="btn-primary">🏠 Go to Dashboard</a>
+                <a href="/editor" class="btn-primary">⚡ Start Coding</a>
+                <a href="/saved" class="btn-primary">📁 My Files</a>
             </div>
-            <div class="footer-info" style="text-align:center;color:var(--text-muted);font-size:0.95rem;padding:1rem 0;">
-                <p>Codeplat by nitinrajput16</p>
-                <p>Current Time: <%= new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) %> IST</p>
-            </div>
-        </main>
+        </div>
+        <div class="footer-info" style="text-align:center;color:var(--text-muted);font-size:0.95rem;padding:1rem 0;">
+            <p>Codeplat by AtikshaRana</p>
+            <p>Current Time: <%= new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) %> IST</p>
+        </div>
+    </main>
 </body>
+
 </html>
