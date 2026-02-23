@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Load .env only if it exists (useful for local dev)
-const envPath = path.join(__dirname, '../.env');
+const envPath = path.resolve(process.cwd(), '.env');
 if (fs.existsSync(envPath)) {
   require('dotenv').config({ path: envPath });
 }
@@ -124,10 +124,17 @@ const sessionConfig = {
   }
 };
 if (process.env.MONGODB_URI) {
-  sessionConfig.store = MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
-    touchAfter: 24 * 3600
-  });
+  try {
+    sessionConfig.store = MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      touchAfter: 24 * 3600,
+      crypto: {
+        secret: process.env.SESSION_SECRET || 'dev-insecure-session-secret'
+      }
+    });
+  } catch (err) {
+    console.error('Failed to create MongoStore:', err.message);
+  }
 }
 const sessionMiddleware = session(sessionConfig);
 app.use(sessionMiddleware);
@@ -139,7 +146,7 @@ app.use((req, res, next) => {
   res.locals.user = req.user || null;
   res.locals.isAuthenticated = req.isAuthenticated && req.isAuthenticated();
   res.locals.appName = process.env.APP_NAME || 'Edit - Code Editor';
-  res.locals.author = 'nr750001';
+  res.locals.author = 'AtikshaRana';
   res.locals.currentYear = new Date().getFullYear();
   next();
 });
@@ -195,7 +202,7 @@ if (require.main === module) {
     console.log('=====================================');
     console.log(`🌐 Listening on port ${PORT} (bound to ${HOST})`);
     if (process.env.APP_URL) console.log(`🔗 Public URL: ${process.env.APP_URL}`);
-    console.log(`👤 Author: nitin...`);
+    console.log(`👤 Author: AtikshaRana`);
     console.log('=====================================');
   });
 }
