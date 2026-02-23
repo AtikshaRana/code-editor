@@ -16,7 +16,7 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-const { initSocket } = require('./socket');
+// const { initSocket } = require('./socket'); // Disabled for Vercel 500 debugging
 
 // ---------- BASIC INIT ----------
 const app = express();
@@ -59,7 +59,7 @@ require('./config/passport')(passport);
 
 // ---------- VIEW ENGINE ----------
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.resolve(__dirname, 'views'));
 
 // ---------- SECURITY MIDDLEWARE ----------
 // Helmet adds security headers
@@ -147,10 +147,19 @@ app.use('/profile', apiLimiter, require('./routes/api/profile'));
 app.use('/api/editor', apiLimiter, require('./routes/api/editor'));
 
 // ---------- STATIC (AFTER PROTECTION) ----------
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.resolve(__dirname, '../public')));
+
+// Health check for Vercel deployment verification
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV
+  });
+});
 
 // ---------- SOCKET.IO ----------
-initSocket(server, { sessionMiddleware });
+// initSocket(server, { sessionMiddleware }); // Disabled for Vercel
 
 // ---------- 404 ----------
 app.use((req, res) => {
