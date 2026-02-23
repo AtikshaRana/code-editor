@@ -1,5 +1,11 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+const fs = require('fs');
+
+// Load .env only if it exists (useful for local dev)
+const envPath = path.join(__dirname, '../.env');
+if (fs.existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+}
 const http = require('http');
 const express = require('express');
 const cors = require('cors');
@@ -27,16 +33,26 @@ if (process.env.TRUST_PROXY === '1') {
 }
 
 // ---------- DATABASE ----------
-(async () => {
+// In a serverless environment (like Vercel), we want to avoid top-level process.exit
+// and ensure the connection is handled gracefully across function invocations.
+let isConnected = false;
+const connectDB = async () => {
+  if (isConnected) return;
   try {
-    if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI not set');
+    if (!process.env.MONGODB_URI) {
+      console.error('❌ MONGODB_URI not set');
+      return;
+    }
     await mongoose.connect(process.env.MONGODB_URI, { maxPoolSize: 10 });
+    isConnected = true;
     console.log('MongoDB Atlas connected');
   } catch (err) {
     console.error('MongoDB connection failed:', err.message);
-    process.exit(1);
   }
-})();
+};
+
+// Initiate connection but don't block/exit
+connectDB();
 
 // ---------- PASSPORT CONFIG ----------
 require('./config/passport')(passport);
@@ -82,10 +98,9 @@ app.use(cors());
 if (!process.env.SESSION_SECRET) {
   if (process.env.NODE_ENV === 'production') {
     console.error('❌ SECURITY ERROR: SESSION_SECRET must be set in production');
-    process.exit(1);
+    // For Vercel, we can't exit, but we should log clearly.
   } else {
     console.warn('⚠️  WARNING: Using insecure default SESSION_SECRET in development');
-    // console.warn('⚠️  Generate a secure secret with: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))")"');
   }
 }
 
@@ -154,11 +169,16 @@ app.use((err, req, res, _next) => {
   });
 });
 
-// ---------- START ----------
-server.listen(PORT, HOST, () => {
-  console.log('=====================================');
-  console.log(`🌐 Listening on port ${PORT} (bound to ${HOST})`);
-  if (process.env.APP_URL) console.log(`🔗 Public URL: ${process.env.APP_URL}`);
-  console.log(`👤 Author: nitin...`);
-  console.log('=====================================');
-});
+// ---------- EXPORT / START ----------
+// Export app for Vercel
+module.exports = app;
+
+if (require.main === module) {
+  server.listen(PORT, HOST, () => {
+    console.log('=====================================');
+    console.log(`🌐 Listening on port ${PORT} (bound to ${HOST})`);
+    if (process.env.APP_URL) console.log(`🔗 Public URL: ${process.env.APP_URL}`);
+    console.log(`👤 Author: nitin...`);
+    console.log('=====================================');
+  });
+}
