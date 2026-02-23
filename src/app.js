@@ -25,6 +25,9 @@ const PORT = process.env.PORT || 3000;
 // Bind to 0.0.0.0 by default so cloud hosts (Render, Heroku, etc.) can reach the server
 const HOST = process.env.HOST || '0.0.0.0';
 
+console.log('[Startup] Environment:', process.env.NODE_ENV || 'development');
+console.log('[Startup] Vercel detected:', !!process.env.VERCEL);
+
 // If running behind a reverse proxy (Render, Railway, Nginx, etc.),
 // trust the proxy so secure cookies work correctly.
 // Set TRUST_PROXY=1 in production if needed.
@@ -59,7 +62,10 @@ require('./config/passport')(passport);
 
 // ---------- VIEW ENGINE ----------
 app.set('view engine', 'ejs');
-app.set('views', path.resolve(__dirname, 'views'));
+// Use process.cwd() for Vercel compatibility
+const viewsPath = path.resolve(process.cwd(), 'src', 'views');
+console.log('[Startup] Views path:', viewsPath);
+app.set('views', viewsPath);
 
 // ---------- SECURITY MIDDLEWARE ----------
 // Helmet adds security headers
@@ -147,7 +153,9 @@ app.use('/profile', apiLimiter, require('./routes/api/profile'));
 app.use('/api/editor', apiLimiter, require('./routes/api/editor'));
 
 // ---------- STATIC (AFTER PROTECTION) ----------
-app.use(express.static(path.resolve(__dirname, '../public')));
+const staticPath = path.resolve(process.cwd(), 'public');
+console.log('[Startup] Static path:', staticPath);
+app.use(express.static(staticPath));
 
 // Health check for Vercel deployment verification
 app.get('/api/health', (req, res) => {

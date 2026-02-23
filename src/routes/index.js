@@ -7,12 +7,12 @@ const router = express.Router();
 // Root logic - Landing page
 router.get('/', (req, res) => {
   if (req.isAuthenticated && req.isAuthenticated()) return res.redirect('/editor');
-  return res.sendFile(path.join(__dirname, '../../public', 'landing.html'));
+  return res.sendFile(path.resolve(process.cwd(), 'public', 'landing.html'));
 });
 
 // Always serve landing page (even when authenticated)
 router.get('/landing', (_req, res) => {
-  return res.sendFile(path.join(__dirname, '../../public', 'landing.html'));
+  return res.sendFile(path.resolve(process.cwd(), 'public', 'landing.html'));
 });
 
 // Login
@@ -48,8 +48,8 @@ router.get('/dashboard', ensureAuth, async (req, res) => {
   const EditorSession = require('../models/EditorSession');
   const now = new Date();
   const istNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-  const dateStr = istNow.toISOString().slice(0,10);
-  
+  const dateStr = istNow.toISOString().slice(0, 10);
+
   try {
     const [files, codeCount, todaySessions, allSessions] = await Promise.all([
       CodeFile.find({ userId: req.user.username }, 'filename language updatedAt size').sort({ updatedAt: -1 }).lean(),
@@ -57,20 +57,20 @@ router.get('/dashboard', ensureAuth, async (req, res) => {
       EditorSession.find({ userId: req.user.username, date: dateStr }).sort({ start: 1 }),
       EditorSession.find({ userId: req.user.username }).sort({ date: -1, start: 1 })
     ]);
-    
+
     // ============ OPTIMAL CODING TIME CALCULATION ============
     // Constants for optimal session processing
     const MIN_SESSION_SECONDS = 3;        // Ignore micro-sessions (page loads)
     const MAX_SESSION_HOURS = 3;          // Cap individual sessions at 3 hours
     const OPEN_SESSION_TIMEOUT = 5 * 60;  // Consider open sessions inactive after 5 minutes
     const MERGE_GAP_SECONDS = 5 * 60;     // Merge sessions within 5 minutes into one block
-    
+
     // Process today's sessions
     const processedSessions = [];
-    
+
     for (const session of todaySessions) {
       let duration = 0;
-      
+
       if (session.end && session.start) {
         // Closed session
         duration = (session.end - session.start) / 1000;
@@ -81,7 +81,7 @@ router.get('/dashboard', ensureAuth, async (req, res) => {
           duration = timeSinceStart;
         }
       }
-      
+
       // Filter out micro-sessions and cap max duration
       if (duration >= MIN_SESSION_SECONDS) {
         duration = Math.min(duration, MAX_SESSION_HOURS * 3600);
@@ -92,17 +92,17 @@ router.get('/dashboard', ensureAuth, async (req, res) => {
         });
       }
     }
-    
+
     // Merge consecutive sessions within 5 minutes into coding blocks
     let totalSeconds = 0;
     if (processedSessions.length > 0) {
       totalSeconds = processedSessions[0].duration;
-      
+
       for (let i = 1; i < processedSessions.length; i++) {
         const prevEnd = processedSessions[i - 1].end;
         const currStart = processedSessions[i].start;
         const gap = (currStart - prevEnd) / 1000;
-        
+
         if (gap <= MERGE_GAP_SECONDS) {
           // Sessions are close together - just add current duration
           totalSeconds += processedSessions[i].duration;
@@ -112,7 +112,7 @@ router.get('/dashboard', ensureAuth, async (req, res) => {
         }
       }
     }
-    
+
     // Format as Hh Mm
     let editorTime = '0m';
     if (totalSeconds > 0) {
@@ -120,19 +120,19 @@ router.get('/dashboard', ensureAuth, async (req, res) => {
       const m = Math.floor((totalSeconds % 3600) / 60);
       editorTime = h > 0 ? `${h}h ${m}m` : `${m}m`;
     }
-    
+
     // ============ OPTIMAL STREAK CALCULATION ============
     // Group sessions by date and calculate daily totals
     const dailyTotals = new Map();
-    
+
     for (const session of allSessions) {
       if (!session.start || !session.date) continue;
-      
+
       let duration = 0;
       if (session.end && session.start) {
         duration = (session.end - session.start) / 1000;
       }
-      
+
       // Only count sessions >= 3 seconds and cap at 3 hours
       if (duration >= MIN_SESSION_SECONDS) {
         duration = Math.min(duration, MAX_SESSION_HOURS * 3600);
@@ -140,18 +140,18 @@ router.get('/dashboard', ensureAuth, async (req, res) => {
         dailyTotals.set(session.date, current + duration);
       }
     }
-    
+
     // Calculate streak - only count days with at least 1 minute of coding
     const MIN_DAILY_SECONDS = 60;
     let streak = 0;
-    
+
     if (dailyTotals.size > 0) {
       const sortedDates = Array.from(dailyTotals.keys()).sort((a, b) => b.localeCompare(a));
       let expectedDate = dateStr;
-      
+
       for (const date of sortedDates) {
         const dailyTotal = dailyTotals.get(date);
-        
+
         if (date === expectedDate && dailyTotal >= MIN_DAILY_SECONDS) {
           streak++;
           // Move to previous day
@@ -164,7 +164,7 @@ router.get('/dashboard', ensureAuth, async (req, res) => {
         }
       }
     }
-    
+
     res.render('dashboard', {
       title: 'Dashboard - Edit',
       user: req.user,
@@ -200,7 +200,7 @@ router.get('/profile', ensureAuth, (req, res) => {
 
 // Protected static SPA editor
 router.get('/editor', ensureAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, '../../public', 'index.html'));
+  res.sendFile(path.resolve(process.cwd(), 'public', 'index.html'));
 });
 
 router.get('/whiteboard', ensureAuth, (req, res) => {
