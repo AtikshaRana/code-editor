@@ -64,8 +64,7 @@ require('./config/passport')(passport);
 
 // ---------- VIEW ENGINE ----------
 app.set('view engine', 'ejs');
-// Use process.cwd() for Vercel compatibility
-const viewsPath = path.resolve(process.cwd(), 'src', 'views');
+const viewsPath = path.join(__dirname, 'views');
 console.log('[Startup] Views path:', viewsPath);
 app.set('views', viewsPath);
 
@@ -162,7 +161,7 @@ app.use('/profile', apiLimiter, require('./routes/api/profile'));
 app.use('/api/editor', apiLimiter, require('./routes/api/editor'));
 
 // ---------- STATIC (AFTER PROTECTION) ----------
-const staticPath = path.resolve(process.cwd(), 'public');
+const staticPath = path.join(__dirname, '../public');
 console.log('[Startup] Static path:', staticPath);
 app.use(express.static(staticPath));
 
