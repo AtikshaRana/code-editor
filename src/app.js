@@ -16,14 +16,7 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-// Global handlers to prevent unhandled crashes in lambdas
-process.on('uncaughtException', (err) => {
-  console.error('[CRITICAL] Uncaught Exception:', err.message);
-  console.error(err.stack);
-});
-process.on('unhandledRejection', (reason) => {
-  console.error('[CRITICAL] Unhandled Rejection:', reason);
-});
+
 
 // const { initSocket } = require('./socket'); // Disabled for Vercel 500 debugging
 
